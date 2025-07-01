@@ -1,0 +1,14 @@
+# Core dependencies
+textual>=0.45.0
+meshtastic>=2.3.0
+pyserial>=3.5
+click>=8.1.0
+pydantic>=2.5.0
+
+# Development dependencies (optional)
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+ruff>=0.1.0
+bandit>=1.7.0
+mypy>=1.7.0
+textual-dev>=1.2.0

@@ -1,0 +1,193 @@
+/* Main stylesheet for Meshling TUI */
+
+/* Global styles */
+Screen {
+    background: $background;
+}
+
+/* Header styles */
+.header {
+    dock: top;
+    height: 3;
+    background: $primary;
+    color: $text;
+    content-align: center middle;
+}
+
+.header-title {
+    text-style: bold;
+}
+
+.connection-status {
+    dock: right;
+    width: 20;
+    text-align: right;
+    padding: 0 1;
+}
+
+.status-connected {
+    color: $success;
+}
+
+.status-disconnected {
+    color: $error;
+}
+
+.status-connecting {
+    color: $warning;
+}
+
+/* Main content area */
+.main-content {
+    layout: horizontal;
+}
+
+/* Packet log styles */
+.packet-log {
+    width: 70%;
+    border: solid $primary;
+    border-title: "Packet Log";
+    padding: 1;
+}
+
+.packet-entry {
+    margin: 0 0 1 0;
+}
+
+.packet-header {
+    text-style: bold;
+    color: $accent;
+}
+
+.packet-text {
+    color: $text;
+    margin: 0 0 0 2;
+}
+
+.packet-meta {
+    color: $text-muted;
+    text-style: italic;
+    margin: 0 0 0 2;
+}
+
+/* Right panel styles */
+.right-panel {
+    width: 30%;
+    layout: vertical;
+}
+
+/* Status panel styles */
+.status-panel {
+    height: 8;
+    border: solid $primary;
+    border-title: "Device Status";
+    padding: 1;
+    margin: 0 0 1 1;
+}
+
+.status-item {
+    margin: 0 0 1 0;
+}
+
+.status-label {
+    text-style: bold;
+    color: $accent;
+}
+
+.status-value {
+    color: $text;
+}
+
+/* Message input styles */
+.message-input {
+    height: 6;
+    border: solid $primary;
+    border-title: "Send Message";
+    padding: 1;
+    margin: 0 0 1 1;
+}
+
+.input-field {
+    width: 100%;
+    margin: 0 0 1 0;
+}
+
+.send-button {
+    width: 100%;
+    background: $success;
+    color: $text;
+}
+
+.send-button:hover {
+    background: $success-darken-1;
+}
+
+/* Connection panel styles */
+.connection-panel {
+    height: 8;
+    border: solid $primary;
+    border-title: "Connection";
+    padding: 1;
+    margin: 0 0 1 1;
+}
+
+.connection-button {
+    width: 100%;
+    margin: 0 0 1 0;
+}
+
+.connect-button {
+    background: $success;
+    color: $text;
+}
+
+.connect-button:hover {
+    background: $success-darken-1;
+}
+
+.disconnect-button {
+    background: $error;
+    color: $text;
+}
+
+.disconnect-button:hover {
+    background: $error-darken-1;
+}
+
+/* Footer styles */
+.footer {
+    dock: bottom;
+    height: 1;
+    background: $surface;
+    color: $text-muted;
+    content-align: center middle;
+}
+
+/* Scrollable content */
+.scrollable {
+    scrollbar-gutter: stable;
+}
+
+/* Loading indicator */
+.loading {
+    text-align: center;
+    color: $warning;
+    text-style: italic;
+}
+
+/* Error messages */
+.error-message {
+    color: $error;
+    text-style: bold;
+}
+
+/* Success messages */
+.success-message {
+    color: $success;
+    text-style: bold;
+}
+
+/* Info messages */
+.info-message {
+    color: $info;
+}
