@@ -26,9 +26,30 @@ class EventType(Enum):
     DEVICE_STATUS_CHANGED = "device_status_changed"
     DEVICE_CONFIG_CHANGED = "device_config_changed"
 
-    # UI events
+    # Node events
+    NODE_DISCOVERED = "node_discovered"
+    NODE_UPDATED = "node_updated"
+    NODE_LOST = "node_lost"
+
+    # Channel events
+    CHANNEL_CONFIG_CHANGED = "channel_config_changed"
+    CHANNEL_ADDED = "channel_added"
+    CHANNEL_REMOVED = "channel_removed"
+
+    # Message events
     MESSAGE_SEND_REQUESTED = "message_send_requested"
+    MESSAGE_SEND_FAILED = "message_send_failed"
+    MESSAGE_RECEIVED = "message_received"
+
+    # Configuration events
+    CONFIG_LOADED = "config_loaded"
+    CONFIG_SAVED = "config_saved"
+    CONFIG_RESET = "config_reset"
+
+    # UI events
     UI_ERROR = "ui_error"
+    TAB_ACTIVATED = "tab_activated"
+    TAB_DEACTIVATED = "tab_deactivated"
 
     # Application events
     APP_SHUTDOWN = "app_shutdown"

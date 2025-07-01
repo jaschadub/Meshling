@@ -1,6 +1,5 @@
-"""UI widgets for Meshling TUI."""
+"""Tab widgets for the enhanced UI architecture."""
 
-from meshling.ui.widgets.common.enhanced_header import EnhancedHeader
 from meshling.ui.widgets.tabs.base_tab import BaseTab, TabPlaceholder
 from meshling.ui.widgets.tabs.channels_tab import ChannelsTab
 from meshling.ui.widgets.tabs.config_tab import ConfigTab
@@ -18,5 +17,4 @@ __all__ = [
     "PacketsTab",
     "ConfigTab",
     "MessagesTab",
-    "EnhancedHeader",
 ]

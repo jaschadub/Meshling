@@ -1,164 +1,42 @@
 """Main Textual application for Meshling TUI."""
 
-import asyncio
 from typing import Optional
 
 from textual.app import App, ComposeResult
-from textual.containers import Container, Vertical
-from textual.reactive import reactive
-from textual.widgets import Button, Footer, Header, Input, Log, Static
+from textual.containers import Container
+from textual.widgets import Footer
 
 from meshling.core.connection_manager import ConnectionManager
 from meshling.core.event_bus import Event, EventType, event_bus
+from meshling.ui.widgets import (
+    ChannelsTab,
+    ConfigTab,
+    EnhancedHeader,
+    MessagesTab,
+    NodesTab,
+    PacketsTab,
+    TabContainer,
+)
 from meshling.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
 
-class PacketLogWidget(Log):
-    """Widget for displaying packet log."""
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.add_class("packet-log")
-
-    def add_packet(self, packet: dict) -> None:
-        """Add a packet to the log display."""
-        try:
-            # Format packet for display
-            from_node = packet.get('from', 'Unknown')
-            to_node = packet.get('to', 'Broadcast')
-
-            # Get text content if available
-            decoded = packet.get('decoded', {})
-            text = decoded.get('text', '')
-
-            if text:
-                # Text message
-                self.write(f"[bold cyan]MSG[/bold cyan] {from_node} → {to_node}: {text}")
-            else:
-                # Other packet type
-                portnum = decoded.get('portnum', 'Unknown')
-                self.write(f"[bold yellow]PKT[/bold yellow] {from_node} → {to_node} ({portnum})")
-
-            # Add metadata
-            rx_snr = packet.get('rx_snr', 0)
-            rx_rssi = packet.get('rx_rssi', 0)
-            if rx_snr or rx_rssi:
-                self.write(f"    [dim]SNR: {rx_snr}dB, RSSI: {rx_rssi}dBm[/dim]")
-
-        except Exception as e:
-            logger.error(f"Error formatting packet: {e}")
-            self.write(f"[red]Error displaying packet: {e}[/red]")
-
-
-class StatusPanel(Static):
-    """Widget for displaying device status."""
-
-    connection_status = reactive("Disconnected")
-    device_type = reactive("None")
-    firmware_version = reactive("Unknown")
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.add_class("status-panel")
-
-    def render(self) -> str:
-        """Render the status panel content."""
-        status_color = {
-            "Connected": "green",
-            "Connecting": "yellow",
-            "Disconnected": "red",
-            "Failed": "red"
-        }.get(self.connection_status, "white")
-
-        return f"""[bold]Connection:[/bold] [{status_color}]{self.connection_status}[/{status_color}]
-[bold]Device Type:[/bold] {self.device_type}
-[bold]Firmware:[/bold] {self.firmware_version}
-[bold]Nodes:[/bold] 0"""
-
-    def update_status(self, status: str, device_info: Optional[dict] = None) -> None:
-        """Update the status display."""
-        self.connection_status = status
-
-        if device_info:
-            self.device_type = device_info.get('type', 'Unknown')
-            self.firmware_version = device_info.get('firmware_version', 'Unknown')
-
-
-class MessageInput(Container):
-    """Widget for message input and sending."""
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.add_class("message-input")
-
-    def compose(self) -> ComposeResult:
-        """Compose the message input widget."""
-        yield Input(placeholder="Type your message...", id="message_input")
-        yield Button("Send", variant="success", id="send_button")
-
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        """Handle send button press."""
-        if event.button.id == "send_button":
-            self.send_message()
-
-    def on_input_submitted(self, event: Input.Submitted) -> None:
-        """Handle input submission (Enter key)."""
-        if event.input.id == "message_input":
-            self.send_message()
-
-    def send_message(self) -> None:
-        """Send the message."""
-        input_widget = self.query_one("#message_input", Input)
-        message = input_widget.value.strip()
-
-        if message:
-            # Emit message send event
-            asyncio.create_task(event_bus.emit(EventType.MESSAGE_SEND_REQUESTED, {
-                'text': message
-            }))
-
-            # Clear input
-            input_widget.value = ""
-
-
-class ConnectionPanel(Container):
-    """Widget for connection controls."""
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.add_class("connection-panel")
-        self.is_connected = False
-
-    def compose(self) -> ComposeResult:
-        """Compose the connection panel widget."""
-        yield Button("Auto Connect", variant="success", id="auto_connect_button")
-        yield Button("Disconnect", variant="error", id="disconnect_button", disabled=True)
-
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        """Handle button presses."""
-        if event.button.id == "auto_connect_button":
-            self.app.call_later(self.app.connection_manager.auto_connect)
-        elif event.button.id == "disconnect_button":
-            self.app.call_later(self.app.connection_manager.disconnect)
-
-    def update_connection_state(self, connected: bool) -> None:
-        """Update button states based on connection."""
-        self.is_connected = connected
-
-        auto_button = self.query_one("#auto_connect_button", Button)
-        disconnect_button = self.query_one("#disconnect_button", Button)
-
-        auto_button.disabled = connected
-        disconnect_button.disabled = not connected
-
-
 class MeshlingApp(App):
-    """Main Meshling TUI application."""
+    """Main Meshling TUI application with enhanced tab-based interface."""
 
     CSS_PATH = "ui/styles/main.tcss"
     TITLE = "Meshling - Meshtastic TUI"
+    BINDINGS = [
+        ("ctrl+c", "quit", "Quit"),
+        ("ctrl+tab", "next_tab", "Next Tab"),
+        ("ctrl+shift+tab", "prev_tab", "Previous Tab"),
+        ("ctrl+1", "tab_channels", "Channels"),
+        ("ctrl+2", "tab_nodes", "Nodes"),
+        ("ctrl+3", "tab_packets", "Packets"),
+        ("ctrl+4", "tab_config", "Config"),
+        ("ctrl+5", "tab_messages", "Messages"),
+    ]
 
     def __init__(self, serial_port: Optional[str] = None,
                  tcp_host: Optional[str] = None, tcp_port: int = 4403):
@@ -167,37 +45,34 @@ class MeshlingApp(App):
         self.serial_port = serial_port
         self.tcp_host = tcp_host
         self.tcp_port = tcp_port
+        self._node_update_timer = None
 
     def compose(self) -> ComposeResult:
         """Compose the main application layout."""
-        yield Header(show_clock=True)
+        # Enhanced header with device info and controls
+        yield EnhancedHeader(id="enhanced_header")
 
+        # Main content area with tabs
         with Container(classes="main-content"):
-            # Left side - packet log
-            yield PacketLogWidget(id="packet_log")
+            yield TabContainer(id="tab_container")
 
-            # Right side - controls
-            with Vertical(classes="right-panel"):
-                yield StatusPanel(id="status_panel")
-                yield MessageInput(id="message_input")
-                yield ConnectionPanel(id="connection_panel")
-
+        # Footer with keybindings
         yield Footer()
 
     async def on_mount(self) -> None:
         """Initialize the application."""
-        logger.info("Starting Meshling TUI")
+        logger.info("Starting Meshling TUI with enhanced interface")
 
         # Start event bus
         await event_bus.start()
 
         # Subscribe to events
-        event_bus.subscribe(EventType.PACKET_RECEIVED, self._on_packet_received)
         event_bus.subscribe(EventType.CONNECTION_ESTABLISHED, self._on_connection_established)
         event_bus.subscribe(EventType.CONNECTION_LOST, self._on_connection_lost)
         event_bus.subscribe(EventType.CONNECTION_FAILED, self._on_connection_failed)
-        event_bus.subscribe(EventType.MESSAGE_SEND_REQUESTED, self._on_message_send_requested)
-        event_bus.subscribe(EventType.DEVICE_STATUS_CHANGED, self._on_device_status_changed)
+
+        # Initialize tabs
+        await self._setup_tabs()
 
         # Auto-connect if parameters provided
         if self.serial_port:
@@ -205,14 +80,16 @@ class MeshlingApp(App):
         elif self.tcp_host:
             await self.connection_manager.connect_tcp(self.tcp_host, self.tcp_port)
         else:
-            # Show welcome message
-            packet_log = self.query_one("#packet_log", PacketLogWidget)
-            packet_log.write("[bold green]Welcome to Meshling![/bold green]")
-            packet_log.write("Click 'Auto Connect' to find and connect to a Meshtastic device.")
+            # Welcome message will be shown when packets tab is activated
+            logger.info("No connection parameters provided - waiting for manual connection")
 
     async def on_unmount(self) -> None:
         """Clean up when application exits."""
         logger.info("Shutting down Meshling TUI")
+
+        # Stop node update timer
+        if self._node_update_timer:
+            self._node_update_timer.stop()
 
         # Disconnect from device
         await self.connection_manager.disconnect()
@@ -220,89 +97,100 @@ class MeshlingApp(App):
         # Stop event bus
         await event_bus.stop()
 
-    def _on_packet_received(self, event: Event) -> None:
-        """Handle received packet events."""
-        packet = event.data.get('packet', {})
-        packet_log = self.query_one("#packet_log", PacketLogWidget)
-        packet_log.add_packet(packet)
+    async def _setup_tabs(self) -> None:
+        """Set up all application tabs."""
+        tab_container = self.query_one("#tab_container", TabContainer)
+
+        # Create and add tabs in order
+        tabs = [
+            ChannelsTab(),
+            NodesTab(),
+            PacketsTab(),
+            ConfigTab(),
+            MessagesTab(),
+        ]
+
+        for tab in tabs:
+            tab_container.add_tab(tab)
+
+        # Switch to channels tab by default
+        await tab_container.switch_to_tab("channels")
 
     def _on_connection_established(self, event: Event) -> None:
         """Handle connection established events."""
-        device_info = event.data.get('device_info', {})
         interface_type = event.data.get('interface_type', 'unknown')
 
-        # Update status panel
-        status_panel = self.query_one("#status_panel", StatusPanel)
-        status_panel.update_status("Connected", device_info)
+        logger.info(f"Connected via {interface_type}")
 
-        # Update connection panel
-        connection_panel = self.query_one("#connection_panel", ConnectionPanel)
-        connection_panel.update_connection_state(True)
-
-        # Log connection
-        packet_log = self.query_one("#packet_log", PacketLogWidget)
-        packet_log.write(f"[bold green]Connected via {interface_type}[/bold green]")
+        # Start node info updater
+        if self._node_update_timer:
+            self._node_update_timer.stop()
+        self._node_update_timer = self.set_interval(10.0, self._update_node_info)
 
     def _on_connection_lost(self, event: Event) -> None:
         """Handle connection lost events."""
         reason = event.data.get('reason', 'unknown')
+        logger.info(f"Disconnected ({reason})")
 
-        # Update status panel
-        status_panel = self.query_one("#status_panel", StatusPanel)
-        status_panel.update_status("Disconnected")
-
-        # Update connection panel
-        connection_panel = self.query_one("#connection_panel", ConnectionPanel)
-        connection_panel.update_connection_state(False)
-
-        # Log disconnection
-        packet_log = self.query_one("#packet_log", PacketLogWidget)
-        packet_log.write(f"[bold red]Disconnected ({reason})[/bold red]")
+        # Stop node info updater
+        if self._node_update_timer:
+            self._node_update_timer.stop()
 
     def _on_connection_failed(self, event: Event) -> None:
         """Handle connection failed events."""
         error = event.data.get('error', 'unknown error')
+        logger.warning(f"Connection failed: {error}")
 
-        # Update status panel
-        status_panel = self.query_one("#status_panel", StatusPanel)
-        status_panel.update_status("Failed")
+    async def _update_node_info(self) -> None:
+        """Periodically update node information."""
+        if self.connection_manager.is_connected:
+            try:
+                node_info = await self.connection_manager.get_node_info()
+                node_count = len(node_info)
 
-        # Update connection panel
-        connection_panel = self.query_one("#connection_panel", ConnectionPanel)
-        connection_panel.update_connection_state(False)
+                # Update header with node count
+                header = self.query_one("#enhanced_header", EnhancedHeader)
+                await header.update_node_count(node_count)
 
-        # Log error
-        packet_log = self.query_one("#packet_log", PacketLogWidget)
-        packet_log.write(f"[bold red]Connection failed: {error}[/bold red]")
+            except Exception as e:
+                logger.error(f"Failed to update node info: {e}")
 
-    async def _on_message_send_requested(self, event: Event) -> None:
-        """Handle message send requests."""
-        text = event.data.get('text', '')
+    # Action methods for keybindings
+    async def action_next_tab(self) -> None:
+        """Switch to next tab."""
+        tab_container = self.query_one("#tab_container", TabContainer)
+        next_tab = tab_container.get_next_tab_id()
+        if next_tab:
+            await tab_container.switch_to_tab(next_tab)
 
-        if text:
-            success = await self.connection_manager.send_message(text)
+    async def action_prev_tab(self) -> None:
+        """Switch to previous tab."""
+        tab_container = self.query_one("#tab_container", TabContainer)
+        prev_tab = tab_container.get_previous_tab_id()
+        if prev_tab:
+            await tab_container.switch_to_tab(prev_tab)
 
-            packet_log = self.query_one("#packet_log", PacketLogWidget)
-            if success:
-                packet_log.write(f"[bold blue]SENT[/bold blue] You: {text}")
-            else:
-                packet_log.write(f"[bold red]FAILED[/bold red] Could not send: {text}")
+    async def action_tab_channels(self) -> None:
+        """Switch to channels tab."""
+        tab_container = self.query_one("#tab_container", TabContainer)
+        await tab_container.switch_to_tab("channels")
 
-    def _on_device_status_changed(self, event: Event) -> None:
-        """Handle device status change events."""
-        status = event.data.get('status', 'unknown')
+    async def action_tab_nodes(self) -> None:
+        """Switch to nodes tab."""
+        tab_container = self.query_one("#tab_container", TabContainer)
+        await tab_container.switch_to_tab("nodes")
 
-        # Update status panel
-        status_panel = self.query_one("#status_panel", StatusPanel)
+    async def action_tab_packets(self) -> None:
+        """Switch to packets tab."""
+        tab_container = self.query_one("#tab_container", TabContainer)
+        await tab_container.switch_to_tab("packets")
 
-        # Map status to display string
-        status_map = {
-            'connected': 'Connected',
-            'connecting': 'Connecting',
-            'disconnected': 'Disconnected',
-            'failed': 'Failed',
-            'reconnecting': 'Reconnecting'
-        }
+    async def action_tab_config(self) -> None:
+        """Switch to config tab."""
+        tab_container = self.query_one("#tab_container", TabContainer)
+        await tab_container.switch_to_tab("config")
 
-        display_status = status_map.get(status, status.title())
-        status_panel.connection_status = display_status
+    async def action_tab_messages(self) -> None:
+        """Switch to messages tab."""
+        tab_container = self.query_one("#tab_container", TabContainer)
+        await tab_container.switch_to_tab("messages")

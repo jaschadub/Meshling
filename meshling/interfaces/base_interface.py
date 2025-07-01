@@ -1,5 +1,6 @@
 """Base interface for Meshtastic device communication."""
 
+import asyncio
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Callable, Dict, Optional
@@ -92,7 +93,7 @@ class BaseInterface(ABC):
         self._connection_callback = callback
         logger.debug("Connection callback set")
 
-    def _update_status(self, new_status: ConnectionStatus) -> None:
+    async def _update_status(self, new_status: ConnectionStatus) -> None:
         """Update connection status and notify callback.
 
         Args:
@@ -105,7 +106,10 @@ class BaseInterface(ABC):
 
             if self._connection_callback:
                 try:
-                    self._connection_callback(new_status)
+                    if asyncio.iscoroutinefunction(self._connection_callback):
+                        await self._connection_callback(new_status)
+                    else:
+                        self._connection_callback(new_status)
                 except Exception as e:
                     logger.error(f"Error in connection callback: {e}")
 

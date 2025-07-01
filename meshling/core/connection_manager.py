@@ -259,17 +259,17 @@ class ConnectionManager:
 
         logger.debug("Interface set and callbacks configured")
 
-    def _on_packet_received(self, packet: Dict[str, Any]) -> None:
+    async def _on_packet_received(self, packet: Dict[str, Any]) -> None:
         """Handle received packet from interface.
 
         Args:
             packet: Received packet data
         """
-        asyncio.create_task(event_bus.emit(EventType.PACKET_RECEIVED, {
+        await event_bus.emit(EventType.PACKET_RECEIVED, {
             'packet': packet
-        }))
+        })
 
-    def _on_connection_status_changed(self, status: ConnectionStatus) -> None:
+    async def _on_connection_status_changed(self, status: ConnectionStatus) -> None:
         """Handle connection status changes.
 
         Args:
@@ -282,10 +282,15 @@ class ConnectionManager:
             if not self._reconnect_task or self._reconnect_task.done():
                 self._reconnect_task = asyncio.create_task(self._attempt_reconnect())
 
+        # Log the device info when connected
+        if status == ConnectionStatus.CONNECTED and self._interface:
+            logger.info(f"Device info from interface: {self._interface.device_info}")
+
         # Emit status change event
-        asyncio.create_task(event_bus.emit(EventType.DEVICE_STATUS_CHANGED, {
-            'status': status.value
-        }))
+        await event_bus.emit(EventType.DEVICE_STATUS_CHANGED, {
+            'status': status.value,
+            'device_info': self._interface.device_info if self._interface else {}
+        })
 
     async def _attempt_reconnect(self) -> None:
         """Attempt to reconnect using the last connection parameters."""

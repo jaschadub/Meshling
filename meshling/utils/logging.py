@@ -35,15 +35,17 @@ def setup_logging(debug: bool = False, log_file: Optional[str] = None) -> None:
     console_handler.setFormatter(formatter)
     root_logger.addHandler(console_handler)
 
-    # File handler if specified
+    # File handler
     if log_file:
         log_path = Path(log_file)
-        log_path.parent.mkdir(parents=True, exist_ok=True)
+    else:
+        log_path = Path.home() / ".meshling" / "meshling.log"
+    log_path.parent.mkdir(parents=True, exist_ok=True)
 
-        file_handler = logging.FileHandler(log_path)
-        file_handler.setLevel(logging.DEBUG)  # Always debug level for file
-        file_handler.setFormatter(formatter)
-        root_logger.addHandler(file_handler)
+    file_handler = logging.FileHandler(log_path)
+    file_handler.setLevel(logging.DEBUG)  # Always debug level for file
+    file_handler.setFormatter(formatter)
+    root_logger.addHandler(file_handler)
 
     # Reduce noise from external libraries
     logging.getLogger("asyncio").setLevel(logging.WARNING)

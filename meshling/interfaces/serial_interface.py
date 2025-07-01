@@ -29,7 +29,7 @@ class SerialInterface(BaseInterface):
             True if connection successful, False otherwise
         """
         try:
-            self._update_status(ConnectionStatus.CONNECTING)
+            await self._update_status(ConnectionStatus.CONNECTING)
             logger.info(f"Connecting to device on port {self.port}")
 
             # Create serial interface in a thread to avoid blocking
@@ -52,7 +52,7 @@ class SerialInterface(BaseInterface):
                 # Start monitoring
                 self._monitor_task = asyncio.create_task(self._monitor_connection())
 
-                self._update_status(ConnectionStatus.CONNECTED)
+                await self._update_status(ConnectionStatus.CONNECTED)
                 logger.info(f"Successfully connected to device on {self.port}")
                 return True
             else:
@@ -60,7 +60,7 @@ class SerialInterface(BaseInterface):
 
         except Exception as e:
             logger.error(f"Failed to connect to {self.port}: {e}")
-            self._update_status(ConnectionStatus.FAILED)
+            await self._update_status(ConnectionStatus.FAILED)
             return False
 
     async def disconnect(self) -> None:
@@ -85,7 +85,7 @@ class SerialInterface(BaseInterface):
             finally:
                 self._interface = None
 
-        self._update_status(ConnectionStatus.DISCONNECTED)
+        await self._update_status(ConnectionStatus.DISCONNECTED)
         logger.info("Disconnected from serial device")
 
     async def send_message(self, text: str, destination: Optional[str] = None) -> bool:
@@ -137,6 +137,8 @@ class SerialInterface(BaseInterface):
                 None,
                 lambda: getattr(self._interface, 'nodes', {})
             )
+
+            logger.info(f"Raw nodes from interface: {nodes}")
 
             # Convert to serializable format
             node_info = {}
@@ -205,6 +207,7 @@ class SerialInterface(BaseInterface):
                 lambda: getattr(self._interface, 'myInfo', {})
             )
 
+            logger.info(f"Raw myInfo from interface: {my_info}")
             self._device_info = {
                 'port': self.port,
                 'type': 'serial',
@@ -225,12 +228,12 @@ class SerialInterface(BaseInterface):
                 # Simple check - try to access interface
                 if not self._interface:
                     logger.warning("Serial interface lost")
-                    self._update_status(ConnectionStatus.FAILED)
+                    await self._update_status(ConnectionStatus.FAILED)
                     break
 
             except asyncio.CancelledError:
                 break
             except Exception as e:
                 logger.error(f"Connection monitoring error: {e}")
-                self._update_status(ConnectionStatus.FAILED)
+                await self._update_status(ConnectionStatus.FAILED)
                 break

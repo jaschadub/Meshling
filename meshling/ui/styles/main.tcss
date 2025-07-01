@@ -1,30 +1,521 @@
-/* Main stylesheet for Meshling TUI */
+/* Main stylesheet for Meshling TUI - Enhanced Tab Interface */
 
 /* Global styles */
+$info: #0288d1;
+
 Screen {
     background: $background;
 }
 
-/* Header styles */
-.header {
+/* Enhanced Header styles */
+.enhanced-header {
     dock: top;
-    height: 3;
+    height: 1;
     background: $primary;
     color: $text;
-    content-align: center middle;
-}
-
-.header-title {
-    text-style: bold;
-}
-
-.connection-status {
-    dock: right;
-    width: 20;
-    text-align: right;
+    layout: horizontal;
     padding: 0 1;
 }
 
+.app-title {
+    width: 50%;
+    text-style: bold;
+    content-align: left middle;
+    padding: 0 1;
+}
+
+.device-status {
+    width: 1fr;
+    content-align: center middle;
+    text-style: bold;
+}
+
+.connection-controls {
+    width: 50%;
+    content-align: right middle;
+}
+
+.header-button {
+    margin: 0 1;
+    min-width: 10;
+}
+
+/* Main content area */
+.main-content {
+    layout: vertical;
+}
+
+/* Tab Container styles */
+.tab-container {
+    layout: vertical;
+    height: 1fr;
+}
+
+.tab-bar {
+    dock: top;
+    height: 1;
+    layout: horizontal;
+    background: $surface;
+    border-bottom: solid $primary;
+}
+
+.tab-button {
+    min-width: 12;
+    height: 1;
+    margin: 0;
+    border: none;
+    background: $surface;
+    color: $text-muted;
+    text-align: center;
+    border: none;
+}
+
+.tab-button:hover {
+    background: $surface-lighten-1;
+    color: $text;
+}
+
+.tab-button-active {
+    background: $primary;
+    color: $text;
+    text-style: bold;
+}
+
+.tab-button-inactive {
+    background: $surface;
+    color: $text-muted;
+}
+
+.tab-button-updated {
+    color: $warning;
+    text-style: bold;
+}
+
+/* Tab Content styles */
+.tab-content {
+    height: 1fr;
+    padding: 0;
+}
+
+.tab-title {
+    text-style: bold;
+    color: $accent;
+    margin: 0 0 1 0;
+}
+
+.tab-subtitle {
+    color: $text-muted;
+    margin: 0 0 2 0;
+}
+
+.section-title {
+    text-style: bold;
+    color: $primary;
+    margin: 0 0 1 0;
+}
+
+.tab-placeholder {
+    text-align: center;
+    color: $text-muted;
+    padding: 4;
+}
+
+/* Channels Tab styles */
+.channels-header {
+    height: auto;
+    margin: 0 0 2 0;
+}
+
+.channels-content {
+    layout: horizontal;
+    height: 1fr;
+}
+
+.channel-list-container {
+    width: 50%;
+}
+
+.channel-details {
+    width: 50%;
+    layout: vertical;
+}
+
+.channel-config {
+    height: 1fr;
+    border: solid $primary;
+    padding: 1;
+}
+
+.channel-log-container {
+    height: 30%;
+    border: solid $primary;
+    padding: 1;
+    margin: 1 0;
+}
+
+.channel-config-actions {
+    dock: bottom;
+    height: 3;
+    layout: horizontal;
+    padding: 1 0;
+}
+
+.channel-config-actions Button {
+    margin: 0 1 0 0;
+}
+
+.channels-actions {
+    dock: bottom;
+    height: 4;
+    layout: horizontal;
+    padding: 1;
+    margin: 1 0 0 0;
+}
+
+.channels-actions Button {
+    margin: 0 1 0 0;
+}
+
+/* Nodes Tab styles */
+.nodes-header {
+    height: auto;
+    margin: 0 0 2 0;
+}
+
+.node-stats {
+    color: $info;
+    text-style: bold;
+}
+
+.nodes-content {
+    layout: horizontal;
+    height: 1fr;
+}
+
+.node-list-container {
+    width: 50%;
+}
+
+.node-details {
+    width: 50%;
+    layout: vertical;
+}
+
+.node-info {
+    height: 40%;
+}
+
+.nodes-actions {
+    dock: bottom;
+    height: 3;
+    layout: horizontal;
+    padding: 1 0;
+}
+
+.nodes-actions Button {
+    margin: 0 1 0 0;
+}
+
+/* Packets Tab styles */
+.packets-header {
+    height: auto;
+    margin: 0 0 2 0;
+}
+
+.packet-stats {
+    color: $info;
+    text-style: bold;
+}
+
+.packets-content {
+    layout: horizontal;
+    height: 1fr;
+}
+
+.packet-log-container {
+    width: 50%;
+}
+
+.packet-details {
+    width: 50%;
+    layout: vertical;
+}
+
+.packets-actions {
+    dock: bottom;
+    height: 4;
+    layout: horizontal;
+    padding: 1;
+    margin: 1 0 0 0;
+}
+
+.packets-actions Button {
+    margin: 0 1 0 0;
+}
+
+/* Messages Tab styles */
+.messages-header {
+    height: auto;
+    margin: 0 0 2 0;
+}
+
+.message-stats {
+    color: $info;
+    text-style: bold;
+}
+
+.messages-content {
+    layout: horizontal;
+    height: 1fr;
+}
+
+.message-log-container {
+    width: 50%;
+}
+
+.message-controls {
+    width: 50%;
+    layout: vertical;
+}
+
+.message-control-row {
+    layout: horizontal;
+    height: auto;
+    margin: 0 0 1 0;
+}
+
+.control-label {
+    width: 8;
+    content-align: left middle;
+}
+
+.control-select {
+    width: 1fr;
+}
+
+.message-stats-container {
+    border: solid $surface;
+    padding: 1;
+    margin: 1 0;
+}
+
+.stat-item {
+    color: $text-muted;
+    margin: 0 0 1 0;
+}
+
+.message-input-container {
+    height: auto;
+    border: solid $primary;
+    padding: 1;
+    margin: 1 0;
+}
+
+.message-input {
+    layout: horizontal;
+    height: 3;
+    padding: 1;
+}
+
+.message-text-input {
+    width: 1fr;
+    margin: 0 1 0 0;
+}
+
+.message-actions {
+    dock: bottom;
+    height: 3;
+    layout: horizontal;
+    padding: 1 0;
+}
+
+.message-actions Button {
+    margin: 0 1 0 0;
+}
+
+/* Config Tab styles */
+.config-header {
+    height: auto;
+    margin: 0 0 2 0;
+}
+
+.config-section {
+    layout: vertical;
+    padding: 1;
+}
+
+.config-row {
+    layout: horizontal;
+    height: auto;
+    margin: 0 0 1 0;
+}
+
+.config-label {
+    width: 15;
+    content-align: left middle;
+}
+
+.config-input {
+    width: 1fr;
+    margin: 0 1 0 0;
+}
+
+.config-select {
+    width: 1fr;
+    margin: 0 1 0 0;
+}
+
+.config-checkbox {
+    width: 1fr;
+}
+
+.config-unit {
+    width: 50%;
+    content-align: left middle;
+    color: $text-muted;
+}
+
+.config-value {
+    width: 1fr;
+    content-align: left middle;
+    color: $text-muted;
+}
+
+.config-button {
+    margin: 0 1 0 0;
+}
+
+.config-log-container {
+    height: 25%;
+    border: solid $primary;
+    padding: 1;
+    margin: 1 0;
+}
+
+.config-actions {
+    dock: bottom;
+    height: 3;
+    layout: horizontal;
+    padding: 1 0;
+}
+
+.config-actions Button {
+    margin: 0 1 0 0;
+}
+
+/* Data Table styles */
+DataTable {
+    height: 1fr;
+}
+
+DataTable > .datatable--header {
+    background: $primary;
+    color: $text;
+    text-style: bold;
+}
+
+DataTable > .datatable--odd-row {
+    background: $surface;
+}
+
+DataTable > .datatable--even-row {
+    background: $background;
+}
+
+DataTable > .datatable--cursor {
+    background: $accent;
+    color: $text;
+}
+
+/* RichLog widget styles */
+RichLog {
+    height: 1fr;
+    scrollbar-gutter: stable;
+    border: none;
+}
+
+/* Log widget styles (legacy) */
+Log {
+    height: 1fr;
+    scrollbar-gutter: stable;
+}
+
+/* TabbedContent styles */
+TabbedContent {
+    height: 1fr;
+}
+
+TabPane {
+    padding: 1;
+}
+
+/* Button variants */
+Button.success {
+    background: $success;
+    color: $text;
+}
+
+Button.success:hover {
+    background: $success-darken-1;
+}
+
+Button.error {
+    background: $error;
+    color: $text;
+}
+
+Button.error:hover {
+    background: $error-darken-1;
+}
+
+Button:disabled {
+    background: $surface;
+    color: $text-muted;
+}
+
+/* Input styles */
+Input {
+    border: solid $primary;
+    background: $surface;
+    color: $text;
+}
+
+Input:focus {
+    border: solid $accent;
+}
+
+/* Select styles */
+Select {
+    border: solid $primary;
+    background: $surface;
+    color: $text;
+}
+
+Select:focus {
+    border: solid $accent;
+}
+
+/* Checkbox styles */
+Checkbox {
+    background: $surface;
+    color: $text;
+}
+
+Checkbox:focus {
+    background: $surface-lighten-1;
+}
+
+/* Container styles */
+Container {
+    border: none;
+}
+
+/* Scrollable content */
+.scrollable {
+    scrollbar-gutter: stable;
+}
+
+/* Status indicators */
 .status-connected {
     color: $success;
 }
@@ -37,137 +528,6 @@ Screen {
     color: $warning;
 }
 
-/* Main content area */
-.main-content {
-    layout: horizontal;
-}
-
-/* Packet log styles */
-.packet-log {
-    width: 70%;
-    border: solid $primary;
-    border-title: "Packet Log";
-    padding: 1;
-}
-
-.packet-entry {
-    margin: 0 0 1 0;
-}
-
-.packet-header {
-    text-style: bold;
-    color: $accent;
-}
-
-.packet-text {
-    color: $text;
-    margin: 0 0 0 2;
-}
-
-.packet-meta {
-    color: $text-muted;
-    text-style: italic;
-    margin: 0 0 0 2;
-}
-
-/* Right panel styles */
-.right-panel {
-    width: 30%;
-    layout: vertical;
-}
-
-/* Status panel styles */
-.status-panel {
-    height: 8;
-    border: solid $primary;
-    border-title: "Device Status";
-    padding: 1;
-    margin: 0 0 1 1;
-}
-
-.status-item {
-    margin: 0 0 1 0;
-}
-
-.status-label {
-    text-style: bold;
-    color: $accent;
-}
-
-.status-value {
-    color: $text;
-}
-
-/* Message input styles */
-.message-input {
-    height: 6;
-    border: solid $primary;
-    border-title: "Send Message";
-    padding: 1;
-    margin: 0 0 1 1;
-}
-
-.input-field {
-    width: 100%;
-    margin: 0 0 1 0;
-}
-
-.send-button {
-    width: 100%;
-    background: $success;
-    color: $text;
-}
-
-.send-button:hover {
-    background: $success-darken-1;
-}
-
-/* Connection panel styles */
-.connection-panel {
-    height: 8;
-    border: solid $primary;
-    border-title: "Connection";
-    padding: 1;
-    margin: 0 0 1 1;
-}
-
-.connection-button {
-    width: 100%;
-    margin: 0 0 1 0;
-}
-
-.connect-button {
-    background: $success;
-    color: $text;
-}
-
-.connect-button:hover {
-    background: $success-darken-1;
-}
-
-.disconnect-button {
-    background: $error;
-    color: $text;
-}
-
-.disconnect-button:hover {
-    background: $error-darken-1;
-}
-
-/* Footer styles */
-.footer {
-    dock: bottom;
-    height: 1;
-    background: $surface;
-    color: $text-muted;
-    content-align: center middle;
-}
-
-/* Scrollable content */
-.scrollable {
-    scrollbar-gutter: stable;
-}
-
 /* Loading indicator */
 .loading {
     text-align: center;
@@ -175,19 +535,31 @@ Screen {
     text-style: italic;
 }
 
-/* Error messages */
+/* Message types */
 .error-message {
     color: $error;
     text-style: bold;
 }
 
-/* Success messages */
 .success-message {
     color: $success;
     text-style: bold;
 }
 
-/* Info messages */
 .info-message {
     color: $info;
 }
+
+.warning-message {
+    color: $warning;
+    text-style: bold;
+}
+
+/* Footer styles */
+Footer {
+    background: $surface;
+    color: $text-muted;
+}
+
+/* Note: Textual CSS doesn't support @media queries
+   Responsive behavior should be handled in Python code */

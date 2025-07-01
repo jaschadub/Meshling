@@ -30,7 +30,7 @@ class TCPInterface(BaseInterface):
             True if connection successful, False otherwise
         """
         try:
-            self._update_status(ConnectionStatus.CONNECTING)
+            await self._update_status(ConnectionStatus.CONNECTING)
             logger.info(f"Connecting to device at {self.host}:{self.port}")
 
             # Create TCP interface in a thread to avoid blocking
@@ -54,7 +54,7 @@ class TCPInterface(BaseInterface):
                 # Start monitoring
                 self._monitor_task = asyncio.create_task(self._monitor_connection())
 
-                self._update_status(ConnectionStatus.CONNECTED)
+                await self._update_status(ConnectionStatus.CONNECTED)
                 logger.info(f"Successfully connected to device at {self.host}:{self.port}")
                 return True
             else:
@@ -62,7 +62,7 @@ class TCPInterface(BaseInterface):
 
         except Exception as e:
             logger.error(f"Failed to connect to {self.host}:{self.port}: {e}")
-            self._update_status(ConnectionStatus.FAILED)
+            await self._update_status(ConnectionStatus.FAILED)
             return False
 
     async def disconnect(self) -> None:
@@ -87,7 +87,7 @@ class TCPInterface(BaseInterface):
             finally:
                 self._interface = None
 
-        self._update_status(ConnectionStatus.DISCONNECTED)
+        await self._update_status(ConnectionStatus.DISCONNECTED)
         logger.info("Disconnected from TCP device")
 
     async def send_message(self, text: str, destination: Optional[str] = None) -> bool:
@@ -228,12 +228,12 @@ class TCPInterface(BaseInterface):
                 # Simple check - try to access interface
                 if not self._interface:
                     logger.warning("TCP interface lost")
-                    self._update_status(ConnectionStatus.FAILED)
+                    await self._update_status(ConnectionStatus.FAILED)
                     break
 
             except asyncio.CancelledError:
                 break
             except Exception as e:
                 logger.error(f"Connection monitoring error: {e}")
-                self._update_status(ConnectionStatus.FAILED)
+                await self._update_status(ConnectionStatus.FAILED)
                 break
